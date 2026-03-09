@@ -1,0 +1,12 @@
+{
+  "name": "rbx-factory",
+  "version": "1.0.0",
+  "description": "RBX Factory — Bot Discord as a Service via GitHub Pages",
+  "scripts": {
+    "register": "node scripts/register-commands.js",
+    "keepalive": "node scripts/keepalive.js"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  }
+}

@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RBX Factory — Créez votre bot Discord</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f1a;
+    --bg3: #141428;
+    --border: #1e1e3a;
+    --accent: #5865f2;
+    --accent2: #7289da;
+    --gold: #f59e0b;
+    --green: #22c55e;
+    --red: #ef4444;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --card: #0d0d1f;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ---- BACKGROUND ---- */
+  .bg-grid {
+    position: fixed; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(88,101,242,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(88,101,242,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+  .bg-glow {
+    position: fixed; inset: 0; z-index: 0;
+    background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(88,101,242,0.15), transparent);
+    pointer-events: none;
+  }
+
+  /* ---- NAV ---- */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 16px 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 1.2rem; font-weight: 700;
+    color: var(--text); text-decoration: none;
+  }
+  .nav-logo span { color: var(--accent); }
+  .nav-links { display: flex; gap: 8px; }
+  .nav-links a {
+    padding: 8px 16px; border-radius: 8px;
+    color: var(--muted); text-decoration: none; font-size: .9rem;
+    transition: all .2s;
+  }
+  .nav-links a:hover { color: var(--text); background: var(--bg3); }
+  .nav-btn {
+    padding: 10px 24px; border-radius: 10px;
+    background: var(--accent); color: white;
+    text-decoration: none; font-weight: 600; font-size: .9rem;
+    transition: all .2s; border: none; cursor: pointer;
+  }
+  .nav-btn:hover { background: var(--accent2); transform: translateY(-1px); }
+
+  /* ---- HERO ---- */
+  .hero {
+    position: relative; z-index: 1;
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center; padding: 80px 20px 40px;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 16px; border-radius: 100px;
+    background: rgba(88,101,242,.15);
+    border: 1px solid rgba(88,101,242,.3);
+    color: var(--accent2); font-size: .85rem; font-weight: 500;
+    margin-bottom: 28px;
+    animation: fadeInDown .6s ease;
+  }
+  .hero-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.3)} }
+  @keyframes fadeInDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+
+  h1 {
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    font-weight: 700; line-height: 1.1;
+    margin-bottom: 24px;
+    animation: fadeInUp .7s ease .1s both;
+  }
+  h1 .gradient {
+    background: linear-gradient(135deg, var(--accent), #a78bfa, var(--gold));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero p {
+    font-size: 1.15rem; color: var(--muted); max-width: 600px; margin: 0 auto 40px;
+    line-height: 1.7; animation: fadeInUp .7s ease .2s both;
+  }
+  .hero-btns {
+    display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+    animation: fadeInUp .7s ease .3s both;
+  }
+  .btn-primary {
+    padding: 14px 32px; border-radius: 12px;
+    background: var(--accent); color: white;
+    font-weight: 700; font-size: 1rem; text-decoration: none;
+    transition: all .2s; border: none; cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .btn-primary:hover { background: var(--accent2); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(88,101,242,.4); }
+  .btn-secondary {
+    padding: 14px 32px; border-radius: 12px;
+    background: transparent; color: var(--text);
+    font-weight: 600; font-size: 1rem; text-decoration: none;
+    border: 1px solid var(--border); transition: all .2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); background: rgba(88,101,242,.05); }
+
+  .hero-stats {
+    display: flex; gap: 40px; justify-content: center; margin-top: 60px;
+    animation: fadeInUp .7s ease .4s both;
+  }
+  .stat { text-align: center; }
+  .stat-num { font-size: 1.8rem; font-weight: 700; color: var(--accent); font-family: 'JetBrains Mono', monospace; }
+  .stat-label { font-size: .85rem; color: var(--muted); margin-top: 4px; }
+
+  /* ---- SECTIONS ---- */
+  section { position: relative; z-index: 1; padding: 100px 40px; max-width: 1200px; margin: 0 auto; }
+  .section-label {
+    display: inline-block; padding: 4px 14px;
+    background: rgba(88,101,242,.1); border: 1px solid rgba(88,101,242,.2);
+    border-radius: 6px; color: var(--accent2); font-size: .8rem;
+    font-family: 'JetBrains Mono', monospace; text-transform: uppercase;
+    letter-spacing: .1em; margin-bottom: 16px;
+  }
+  h2 { font-size: clamp(1.8rem, 3vw, 2.5rem); font-weight: 700; margin-bottom: 16px; }
+  h2 .accent { color: var(--accent); }
+  .subtitle { color: var(--muted); font-size: 1.05rem; line-height: 1.7; max-width: 600px; margin-bottom: 60px; }
+
+  /* ---- PLANS ---- */
+  .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-top: 20px; }
+  .plan-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px; padding: 36px;
+    transition: all .3s; position: relative; overflow: hidden;
+  }
+  .plan-card::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(88,101,242,.05), transparent);
+    opacity: 0; transition: opacity .3s;
+  }
+  .plan-card:hover { border-color: var(--accent); transform: translateY(-4px); }
+  .plan-card:hover::before { opacity: 1; }
+  .plan-card.featured {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, rgba(88,101,242,.08), var(--card));
+  }
+  .plan-card.premium {
+    border-color: var(--gold);
+    background: linear-gradient(135deg, rgba(245,158,11,.06), var(--card));
+  }
+  .plan-badge {
+    display: inline-block; padding: 4px 12px; border-radius: 6px;
+    font-size: .75rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .05em; margin-bottom: 20px;
+  }
+  .badge-free { background: rgba(107,114,128,.2); color: #9ca3af; }
+  .badge-pro { background: rgba(88,101,242,.2); color: var(--accent2); }
+  .badge-premium { background: rgba(245,158,11,.2); color: var(--gold); }
+  .plan-price { font-size: 2.5rem; font-weight: 700; margin-bottom: 8px; font-family: 'JetBrains Mono', monospace; }
+  .plan-price small { font-size: 1rem; color: var(--muted); font-family: 'Space Grotesk', sans-serif; }
+  .plan-desc { color: var(--muted); font-size: .9rem; margin-bottom: 28px; }
+  .plan-features { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .plan-features li {
+    display: flex; align-items: center; gap: 10px;
+    font-size: .9rem; color: var(--text);
+  }
+  .plan-features li .icon { font-size: .85rem; width: 20px; text-align: center; }
+  .plan-cta {
+    display: block; width: 100%; margin-top: 32px;
+    padding: 14px; border-radius: 12px; text-align: center;
+    font-weight: 700; font-size: .95rem; text-decoration: none;
+    transition: all .2s; cursor: pointer; border: none;
+  }
+  .cta-free { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
+  .cta-free:hover { border-color: var(--accent); color: var(--accent); }
+  .cta-pro { background: var(--accent); color: white; }
+  .cta-pro:hover { background: var(--accent2); transform: translateY(-1px); }
+  .cta-premium { background: var(--gold); color: #0a0a0f; }
+  .cta-premium:hover { background: #fbbf24; transform: translateY(-1px); }
+
+  /* ---- COMMANDS ---- */
+  .commands-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .cmd-category {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 24px; transition: all .3s;
+  }
+  .cmd-category:hover { border-color: var(--accent); }
+  .cmd-category-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .cmd-category-icon { font-size: 1.3rem; }
+  .cmd-category-name { font-weight: 700; font-size: 1rem; }
+  .cmd-badge {
+    margin-left: auto; padding: 2px 8px; border-radius: 4px;
+    font-size: .7rem; font-weight: 700; text-transform: uppercase;
+  }
+  .cmd-list { display: flex; flex-direction: column; gap: 6px; }
+  .cmd-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 10px; border-radius: 8px;
+    background: var(--bg2); font-size: .85rem;
+  }
+  .cmd-name { font-family: 'JetBrains Mono', monospace; color: var(--accent2); }
+  .cmd-desc { color: var(--muted); font-size: .8rem; }
+
+  /* ---- DASHBOARD ---- */
+  #dashboard {
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .dashboard-wrapper { max-width: 1200px; margin: 0 auto; padding: 100px 40px; }
+  .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+  @media(max-width:768px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
+  .dash-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 20px; padding: 32px;
+  }
+  .dash-card h3 { font-size: 1.1rem; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: .85rem; color: var(--muted); margin-bottom: 6px; }
+  .form-input {
+    width: 100%; padding: 12px 16px;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text); font-size: .95rem;
+    font-family: 'Space Grotesk', sans-serif;
+    transition: border-color .2s; outline: none;
+  }
+  .form-input:focus { border-color: var(--accent); }
+  .form-select {
+    width: 100%; padding: 12px 16px;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text); font-size: .95rem;
+    font-family: 'Space Grotesk', sans-serif; outline: none;
+    cursor: pointer;
+  }
+  .form-select:focus { border-color: var(--accent); }
+
+  .modules-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .module-toggle {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 12px; border-radius: 10px;
+    background: var(--bg2); border: 1px solid var(--border);
+    cursor: pointer; transition: all .2s; user-select: none;
+    font-size: .85rem;
+  }
+  .module-toggle.active { border-color: var(--accent); background: rgba(88,101,242,.1); }
+  .module-toggle.locked { opacity: .4; cursor: not-allowed; }
+  .toggle-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--border); transition: background .2s;
+    flex-shrink: 0;
+  }
+  .module-toggle.active .toggle-dot { background: var(--accent); }
+
+  /* ---- BOT CARDS ---- */
+  .bot-list { display: flex; flex-direction: column; gap: 12px; }
+  .bot-item {
+    display: flex; align-items: center; gap: 16px;
+    padding: 16px; border-radius: 12px;
+    background: var(--bg2); border: 1px solid var(--border);
+    transition: border-color .2s;
+  }
+  .bot-item:hover { border-color: var(--accent); }
+  .bot-avatar {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent), #a78bfa);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; flex-shrink: 0;
+  }
+  .bot-info { flex: 1; }
+  .bot-name { font-weight: 700; font-size: .95rem; }
+  .bot-meta { color: var(--muted); font-size: .8rem; margin-top: 2px; }
+  .bot-status {
+    padding: 4px 10px; border-radius: 6px;
+    font-size: .75rem; font-weight: 700;
+  }
+  .status-online { background: rgba(34,197,94,.15); color: var(--green); }
+  .status-offline { background: rgba(107,114,128,.15); color: var(--muted); }
+
+  /* ---- INTERACTION ENDPOINT ---- */
+  #endpoint {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px 24px;
+    font-size: .85rem; color: var(--accent2);
+    word-break: break-all; margin-top: 12px;
+  }
+  .endpoint-label { font-size: .8rem; color: var(--muted); margin-bottom: 8px; }
+
+  /* ---- FOOTER ---- */
+  footer {
+    position: relative; z-index: 1;
+    border-top: 1px solid var(--border);
+    padding: 40px; text-align: center;
+    color: var(--muted); font-size: .9rem;
+  }
+  footer a { color: var(--accent2); text-decoration: none; }
+  footer a:hover { color: var(--accent); }
+
+  /* ---- ALERTS ---- */
+  .alert {
+    padding: 14px 20px; border-radius: 12px;
+    margin-top: 16px; font-size: .9rem;
+    display: none; animation: fadeInUp .3s ease;
+  }
+  .alert.show { display: block; }
+  .alert-success { background: rgba(34,197,94,.1); border: 1px solid rgba(34,197,94,.3); color: var(--green); }
+  .alert-error { background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.3); color: var(--red); }
+  .alert-info { background: rgba(88,101,242,.1); border: 1px solid rgba(88,101,242,.3); color: var(--accent2); }
+
+  /* ---- LOADING ---- */
+  .spinner {
+    display: inline-block; width: 16px; height: 16px;
+    border: 2px solid transparent; border-top-color: currentColor;
+    border-radius: 50%; animation: spin .7s linear infinite;
+    vertical-align: middle; margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---- RESPONSIVE ---- */
+  @media(max-width:768px) {
+    nav { padding: 12px 20px; }
+    .nav-links { display: none; }
+    section { padding: 60px 20px; }
+    .hero-stats { gap: 24px; }
+    .modules-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ---- SCROLLBAR ---- */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">🤖 RBX <span>Factory</span></a>
+  <div class="nav-links">
+    <a href="#plans">Plans</a>
+    <a href="#commandes">Commandes</a>
+    <a href="#dashboard">Dashboard</a>
+    <a href="#setup">Setup</a>
+  </div>
+  <a class="nav-btn" href="https://discord.gg/xrz9vyVj2a" target="_blank">Rejoindre le serveur</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div>
+    <div class="hero-badge">🟢 Bot en ligne — RBX Factory</div>
+    <h1>Créez votre bot Discord<br><span class="gradient">en quelques secondes</span></h1>
+    <p>RBX Factory vous permet de créer, personnaliser et gérer votre propre bot Discord sans coder. Modération, economy, musique, tickets et bien plus.</p>
+    <div class="hero-btns">
+      <a class="btn-primary" href="#dashboard">🤖 Créer mon bot</a>
+      <a class="btn-secondary" href="https://discord.gg/xrz9vyVj2a" target="_blank">💬 Rejoindre le serveur</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-num" id="stat-bots">0</div><div class="stat-label">Bots créés</div></div>
+      <div class="stat"><div class="stat-num">30+</div><div class="stat-label">Commandes</div></div>
+      <div class="stat"><div class="stat-num">3</div><div class="stat-label">Plans</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- PLANS -->
+<section id="plans">
+  <div class="section-label">Plans</div>
+  <h2>Choisissez votre <span class="accent">plan</span></h2>
+  <p class="subtitle">Tous les membres du serveur RBX Factory peuvent créer un bot gratuitement. Upgradez pour plus de fonctionnalités.</p>
+  <div class="plans-grid">
+    <div class="plan-card">
+      <div class="plan-badge badge-free">Gratuit</div>
+      <div class="plan-price">0€ <small>/ mois</small></div>
+      <div class="plan-desc">Pour débuter avec votre premier bot Discord.</div>
+      <ul class="plan-features">
+        <li><span class="icon">🤖</span> 1 bot maximum</li>
+        <li><span class="icon">🔨</span> Modération complète</li>
+        <li><span class="icon">🎫</span> Système de tickets</li>
+        <li><span class="icon">❓</span> Commandes /help & /equipe</li>
+        <li><span class="icon">✅</span> /help toujours présent</li>
+        <li><span class="icon">✅</span> Crédit RBX Factory obligatoire</li>
+      </ul>
+      <a class="plan-cta cta-free" href="https://discord.gg/xrz9vyVj2a" target="_blank">Commencer gratuitement</a>
+    </div>
+    <div class="plan-card featured">
+      <div class="plan-badge badge-pro">Pro</div>
+      <div class="plan-price">4.99€ <small>/ mois</small></div>
+      <div class="plan-desc">Pour les serveurs qui veulent aller plus loin.</div>
+      <ul class="plan-features">
+        <li><span class="icon">🤖</span> 3 bots maximum</li>
+        <li><span class="icon">🔨</span> Tout le plan Gratuit</li>
+        <li><span class="icon">🎵</span> Commandes musique</li>
+        <li><span class="icon">💰</span> Système économie</li>
+        <li><span class="icon">⭐</span> Leveling & XP</li>
+        <li><span class="icon">📊</span> Sondages & Giveaway</li>
+        <li><span class="icon">📢</span> Annonces & Embeds</li>
+        <li><span class="icon">🎭</span> AutoRole</li>
+      </ul>
+      <a class="plan-cta cta-pro" href="https://discord.gg/xrz9vyVj2a" target="_blank">Obtenir Pro</a>
+    </div>
+    <div class="plan-card premium">
+      <div class="plan-badge badge-premium">Premium</div>
+      <div class="plan-price">9.99€ <small>/ mois</small></div>
+      <div class="plan-desc">Accès illimité à tout l'écosystème RBX Factory.</div>
+      <ul class="plan-features">
+        <li><span class="icon">♾️</span> Bots illimités</li>
+        <li><span class="icon">💎</span> Tout le plan Pro</li>
+        <li><span class="icon">🛡️</span> Anti-raid avancé</li>
+        <li><span class="icon">📋</span> Logs détaillés</li>
+        <li><span class="icon">⚡</span> Reaction Roles</li>
+        <li><span class="icon">ℹ️</span> /roleinfo avancé</li>
+        <li><span class="icon">👑</span> Support prioritaire</li>
+        <li><span class="icon">🚀</span> Accès anticipé features</li>
+      </ul>
+      <a class="plan-cta cta-premium" href="https://discord.gg/xrz9vyVj2a" target="_blank">Obtenir Premium</a>
+    </div>
+  </div>
+</section>
+
+<!-- COMMANDES -->
+<section id="commandes">
+  <div class="section-label">Commandes</div>
+  <h2>Plus de <span class="accent">30 commandes</span> disponibles</h2>
+  <p class="subtitle">Chaque bot créé avec RBX Factory bénéficie d'un arsenal de commandes selon votre plan.</p>
+  <div class="commands-grid">
+    <div class="cmd-category">
+      <div class="cmd-category-header">
+        <span class="cmd-category-icon">🔨</span>
+        <span class="cmd-category-name">Modération</span>
+        <span class="cmd-badge" style="background:rgba(107,114,128,.2);color:#9ca3af">FREE</span>
+      </div>
+      <div class="cmd-list">
+        <div class="cmd-item"><span class="cmd-name">/ban</span><span class="cmd-desc">Bannir un membre</span></div>
+        <div class="cmd-item"><span class="cmd-name">/kick</span><span class="cmd-desc">Expulser un membre</span></div>
+        <div class="cmd-item"><span class="cmd-name">/mute</span><span class="cmd-desc">Mettre en sourdine</span></div>
+        <div class="cmd-item"><span class="cmd-name">/warn</span><span class="cmd-desc">Avertir un membre</span></div>
+        <div class="cmd-item"><span class="cmd-name">/clear</span><span class="cmd-desc">Supprimer messages</span></div>
+        <div class="cmd-item"><span class="cmd-name">/lock</span><span class="cmd-desc">Verrouiller salon</span></div>
+        <div class="cmd-item"><span class="cmd-name">/slowmode</span><span class="cmd-desc">Mode lent</span></div>
+      </div>
+    </div>
+    <div class="cmd-category">
+      <div class="cmd-category-header">
+        <span class="cmd-category-icon">🎫</span>
+        <span class="cmd-category-name">Tickets</span>
+        <span class="cmd-badge" style="background:rgba(107,114,128,.2);color:#9ca3af">FREE</span>
+      </div>
+      <div class="cmd-list">
+        <div class="cmd-item"><span class="cmd-name">/ticket créer</span><span class="cmd-desc">Ouvrir un ticket</span></div>
+        <div class="cmd-item"><span class="cmd-name">/ticket fermer</span><span class="cmd-desc">Fermer le ticket</span></div>
+        <div class="cmd-item"><span class="cmd-name">/ticket setup</span><span class="cmd-desc">Configurer</span></div>
+      </div>
+    </div>
+    <div class="cmd-category">
+      <div class="cmd-category-header">
+        <span class="cmd-category-icon">🎵</span>
+        <span class="cmd-category-name">Musique</span>
+        <span class="cmd-badge" style="background:rgba(88,101,242,.2);color:var(--accent2)">PRO</span>
+      </div>
+      <div class="cmd-list">
+        <div class="cmd-item"><span class="cmd-name">/play</span><span class="cmd-desc">Jouer musique</span></div>
+        <div class="cmd-item"><span class="cmd-name">/skip</span><span class="cmd-desc">Passer la piste</span></div>
+        <div class="cmd-item"><span class="cmd-name">/queue</span><span class="cmd-desc">File d'attente</span></div>
+        <div class="cmd-item"><span class="cmd-name">/volume</span><span class="cmd-desc">Régler le volume</span></div>
+        <div class="cmd-item"><span class="cmd-name">/stop</span><span class="cmd-desc">Arrêter la musique</span></div>
+      </div>
+    </div>
+    <div class="cmd-category">
+      <div class="cmd-category-header">
+        <span class="cmd-category-icon">💰</span>
+        <span class="cmd-category-name">Économie</span>
+        <span class="cmd-badge" style="background:rgba(88,101,242,.2);color:var(--accent2)">PRO</span>
+      </div>
+      <div class="cmd-list">
+        <div class="cmd-item"><span class="cmd-name">/balance</span><span class="cmd-desc">Voir son solde</span></div>
+        <div class="cmd-item"><span class="cmd-name">/daily</span><span class="cmd-desc">Récompense quotidienne</span></div>
+        <div class="cmd-item"><span class="cmd-name">/work</span><span class="cmd-desc">Gagner des coins</span></div>
+        <div class="cmd-item"><span class="cmd-name">/shop</span><span class="cmd-desc">Boutique</span></div>
+        <div class="cmd-item"><span class="cmd-name">/transfer</span><span class="cmd-desc">Transférer coins</span></div>
+        <div class="cmd-item"><span class="cmd-name">/rank</span><span class="cmd-desc">Voir son rang</span></div>
+        <div class="cmd-item"><span class="cmd-name">/leaderboard</span><span class="cmd-desc">Classement</span></div>
+      </div>
+    </div>
+    <div class="cmd-category">
+      <div class="cmd-category-header">
+        <span class="cmd-category-icon">📊</span>
+        <span class="cmd-category-name">Avancé</span>
+        <span class="cmd-badge" style="background:rgba(88,101,242,.2);color:var(--accent2)">PRO</span>
+      </div>
+      <div class="cmd-list">
+        <div class="cmd-item"><span class="cmd-name">/sondage</span><span class="cmd-desc">Créer un sondage</span></div>
+        <div class="cmd-item"><span class="cmd-name">/giveaway</span><span class="cmd-desc">Lancer un giveaway</span></div>
+        <div class="cmd-item"><span class="cmd-name">/annonce</span><span class="cmd-desc">Envoyer annonce</span></div>
+        <div class="cmd-item"><span class="cmd-name">/embed</span><span class="cmd-desc">Créer un embed</span></div>
+        <div class="cmd-item"><span class="cmd-name">/rappel</span><span class="cmd-desc">Créer rappel</span></div>
+        <div class="cmd-item"><span class="cmd-name">/autorole</span><span class="cmd-desc">Rôle automatique</span></div>
+      </div>
+    </div>
+    <div class="cmd-category">
+      <div class="cmd-category-header">
+        <span class="cmd-category-icon">👑</span>
+        <span class="cmd-category-name">Premium</span>
+        <span class="cmd-badge" style="background:rgba(245,158,11,.2);color:var(--gold)">PREMIUM</span>
+      </div>
+      <div class="cmd-list">
+        <div class="cmd-item"><span class="cmd-name">/antiraid</span><span class="cmd-desc">Protection anti-raid</span></div>
+        <div class="cmd-item"><span class="cmd-name">/logs</span><span class="cmd-desc">Logs du serveur</span></div>
+        <div class="cmd-item"><span class="cmd-name">/welcome</span><span class="cmd-desc">Message bienvenue</span></div>
+        <div class="cmd-item"><span class="cmd-name">/reactionrole</span><span class="cmd-desc">Reaction roles</span></div>
+        <div class="cmd-item"><span class="cmd-name">/roleinfo</span><span class="cmd-desc">Infos rôle avancé</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="dashboard-wrapper">
+    <div class="section-label">Dashboard</div>
+    <h2>Gérez vos <span class="accent">bots</span></h2>
+    <p class="subtitle">Créez et configurez vos bots directement depuis cette interface. Aucune installation requise.</p>
+
+    <div class="dashboard-grid">
+      <!-- CREATE BOT FORM -->
+      <div class="dash-card">
+        <h3>🤖 Créer un bot</h3>
+        <div class="form-group">
+          <label>Nom du bot *</label>
+          <input class="form-input" id="bot-name" type="text" placeholder="Mon Super Bot" maxlength="32">
+        </div>
+        <div class="form-group">
+          <label>Description *</label>
+          <input class="form-input" id="bot-desc" type="text" placeholder="Un bot pour mon serveur" maxlength="100">
+        </div>
+        <div class="form-group">
+          <label>Préfixe (legacy)</label>
+          <input class="form-input" id="bot-prefix" type="text" placeholder="!" maxlength="5" value="!">
+        </div>
+        <div class="form-group">
+          <label>Couleur embed (hex)</label>
+          <input class="form-input" id="bot-color" type="text" placeholder="#5865F2" value="#5865F2" maxlength="7">
+        </div>
+        <div class="form-group">
+          <label>Token du bot (pour l'activer)</label>
+          <input class="form-input" id="bot-token" type="password" placeholder="Token Discord de votre bot (optionnel)">
+        </div>
+        <div class="form-group">
+          <label>Modules (selon votre plan)</label>
+          <div class="modules-grid" id="modules-grid">
+            <div class="module-toggle active" data-module="moderation"><div class="toggle-dot"></div>🔨 Modération</div>
+            <div class="module-toggle active" data-module="tickets"><div class="toggle-dot"></div>🎫 Tickets</div>
+            <div class="module-toggle locked" data-module="music" data-plan="PRO"><div class="toggle-dot"></div>🎵 Musique</div>
+            <div class="module-toggle locked" data-module="economy" data-plan="PRO"><div class="toggle-dot"></div>💰 Économie</div>
+            <div class="module-toggle locked" data-module="advanced" data-plan="PRO"><div class="toggle-dot"></div>📊 Avancé</div>
+            <div class="module-toggle locked" data-module="antiraid" data-plan="PREMIUM"><div class="toggle-dot"></div>🛡️ Anti-Raid</div>
+            <div class="module-toggle locked" data-module="welcome" data-plan="PREMIUM"><div class="toggle-dot"></div>👋 Bienvenue</div>
+            <div class="module-toggle locked" data-module="logs" data-plan="PREMIUM"><div class="toggle-dot"></div>📋 Logs</div>
+          </div>
+        </div>
+        <button class="btn-primary" id="create-btn" style="width:100%;justify-content:center;margin-top:8px;" onclick="createBot()">
+          🤖 Créer mon bot
+        </button>
+        <div class="alert" id="create-alert"></div>
+      </div>
+
+      <!-- BOT LIST + INFO -->
+      <div style="display:flex;flex-direction:column;gap:24px;">
+        <div class="dash-card">
+          <h3>📦 Mes bots <span id="bot-count" style="color:var(--muted);font-weight:400;font-size:.9rem"></span></h3>
+          <div class="bot-list" id="bot-list">
+            <div style="color:var(--muted);font-size:.9rem;text-align:center;padding:20px;">
+              Aucun bot créé. Utilisez le formulaire ou<br>la commande <code style="color:var(--accent2)">/createbot</code> sur Discord.
+            </div>
+          </div>
+        </div>
+        <div class="dash-card">
+          <h3>🔗 URL du bot</h3>
+          <p style="color:var(--muted);font-size:.85rem;margin-bottom:12px;">
+            Ajoutez votre bot à votre serveur via ce lien. Remplacez <code style="color:var(--accent2)">CLIENT_ID</code> par l'ID de votre application Discord.
+          </p>
+          <div class="endpoint-label">Lien d'invitation</div>
+          <div id="endpoint" style="font-size:.75rem;">
+            https://discord.com/api/oauth2/authorize?client_id=CLIENT_ID&permissions=8&scope=bot%20applications.commands
+          </div>
+          <button class="btn-secondary" style="margin-top:12px;padding:10px 20px;font-size:.85rem;" onclick="copyEndpoint()">📋 Copier</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SETUP GUIDE -->
+<section id="setup">
+  <div class="section-label">Guide</div>
+  <h2>Comment <span class="accent">démarrer</span> ?</h2>
+  <p class="subtitle">En 3 étapes, votre bot est opérationnel sur votre serveur Discord.</p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;">
+    <div class="dash-card" style="text-align:center;">
+      <div style="font-size:2.5rem;margin-bottom:16px;">1️⃣</div>
+      <h3 style="justify-content:center;margin-bottom:12px;">Rejoindre le serveur</h3>
+      <p style="color:var(--muted);font-size:.9rem;line-height:1.7;">Rejoignez le serveur officiel RBX Factory pour activer votre accès et maintenir votre bot en ligne.</p>
+      <a class="btn-primary" href="https://discord.gg/xrz9vyVj2a" target="_blank" style="display:inline-flex;margin-top:20px;">Rejoindre Discord</a>
+    </div>
+    <div class="dash-card" style="text-align:center;">
+      <div style="font-size:2.5rem;margin-bottom:16px;">2️⃣</div>
+      <h3 style="justify-content:center;margin-bottom:12px;">Créer votre bot</h3>
+      <p style="color:var(--muted);font-size:.9rem;line-height:1.7;">Utilisez <code style="color:var(--accent2)">/createbot</code> dans le serveur RBX Factory ou via ce dashboard pour configurer votre bot.</p>
+    </div>
+    <div class="dash-card" style="text-align:center;">
+      <div style="font-size:2.5rem;margin-bottom:16px;">3️⃣</div>
+      <h3 style="justify-content:center;margin-bottom:12px;">Inviter sur votre serveur</h3>
+      <p style="color:var(--muted);font-size:.9rem;line-height:1.7;">Créez votre propre application sur <a href="https://discord.com/developers" target="_blank" style="color:var(--accent2)">discord.com/developers</a>, copiez votre token et invitez le bot.</p>
+    </div>
+  </div>
+
+  <!-- Register commands button -->
+  <div class="dash-card" style="margin-top:40px;">
+    <h3>⚙️ Enregistrer les commandes slash</h3>
+    <p style="color:var(--muted);font-size:.9rem;margin-bottom:16px;">
+      Cliquez pour enregistrer toutes les commandes slash de RBX Factory sur Discord. À faire une seule fois (ou après une mise à jour).
+    </p>
+    <button class="btn-primary" onclick="registerCommands()" id="register-btn">
+      ⚡ Enregistrer les commandes
+    </button>
+    <div class="alert" id="register-alert"></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>🤖 <strong>RBX Factory</strong> — Créé avec ❤️ par l'équipe RBX</p>
+  <p style="margin-top:8px;">
+    <a href="https://discord.gg/xrz9vyVj2a" target="_blank">Discord</a> •
+    <a href="https://github.com" target="_blank">GitHub</a> •
+    <a href="#plans">Plans</a>
+  </p>
+  <p style="margin-top:12px;font-size:.8rem;">⚠️ Restez dans le serveur RBX Factory pour maintenir votre bot actif.</p>
+</footer>
+
+<script src="js/discord.js"></script>
+<script>
+// ============================================================
+// INTERACTIONS ENDPOINT — Discord POSTs ici
+// GitHub Pages sert ce fichier. Discord envoie POST / ici.
+// On utilise Service Worker pour intercepter les POST.
+// ============================================================
+
+// Register Service Worker for handling Discord interactions
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').then(reg => {
+    console.log('✅ Service Worker enregistré');
+  }).catch(err => {
+    console.warn('Service Worker non disponible:', err);
+  });
+}
+
+// ---- Dashboard Logic ----
+function loadDashboard() {
+  const bots = RBXFactory.loadBots();
+  const list = Object.values(bots);
+  document.getElementById('stat-bots').textContent = list.length;
+  document.getElementById('bot-count').textContent = `(${list.length})`;
+
+  const container = document.getElementById('bot-list');
+  if (list.length === 0) {
+    container.innerHTML = `<div style="color:var(--muted);font-size:.9rem;text-align:center;padding:20px;">
+      Aucun bot créé. Utilisez le formulaire ou<br>la commande <code style="color:var(--accent2)">/createbot</code> sur Discord.
+    </div>`;
+    return;
+  }
+  container.innerHTML = list.map(bot => `
+    <div class="bot-item">
+      <div class="bot-avatar">🤖</div>
+      <div class="bot-info">
+        <div class="bot-name">${escHtml(bot.nom)}</div>
+        <div class="bot-meta">${escHtml(bot.plan)} • ${bot.modules.length} modules • ID: ${bot.id.split('_')[2]}</div>
+      </div>
+      <span class="bot-status ${bot.status === 'online' ? 'status-online' : 'status-offline'}">
+        ${bot.status === 'online' ? '🟢 En ligne' : '🟡 Configuré'}
+      </span>
+      <button onclick="deleteBot('${bot.id}')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#ef4444;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:.8rem;margin-left:8px;">Suppr.</button>
+    </div>
+  `).join('');
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function deleteBot(id) {
+  if (!confirm('Supprimer ce bot ?')) return;
+  const bots = RBXFactory.loadBots();
+  delete bots[id];
+  RBXFactory.saveBots(bots);
+  loadDashboard();
+  showAlert('create-alert', 'Bot supprimé.', 'info');
+}
+
+// Module toggles
+document.querySelectorAll('.module-toggle:not(.locked)').forEach(el => {
+  el.addEventListener('click', () => el.classList.toggle('active'));
+});
+
+async function createBot() {
+  const btn = document.getElementById('create-btn');
+  const name = document.getElementById('bot-name').value.trim();
+  const desc = document.getElementById('bot-desc').value.trim();
+  const prefix = document.getElementById('bot-prefix').value.trim() || '!';
+  const color = document.getElementById('bot-color').value.trim() || '#5865F2';
+  const token = document.getElementById('bot-token').value.trim();
+
+  if (!name || !desc) { showAlert('create-alert', '❌ Nom et description requis.', 'error'); return; }
+
+  btn.innerHTML = '<span class="spinner"></span> Création...';
+  btn.disabled = true;
+
+  const activeModules = [...document.querySelectorAll('.module-toggle.active')].map(el => el.dataset.module);
+
+  const botId = `bot_local_${Date.now()}`;
+  const bot = {
+    id: botId, ownerId: 'local_user', nom: name, description: desc,
+    prefix, couleur: color, token: token || null,
+    plan: 'FREE', modules: activeModules,
+    status: token ? 'online' : 'configured', createdAt: Date.now()
+  };
+
+  const bots = RBXFactory.loadBots();
+  bots[botId] = bot;
+  RBXFactory.saveBots(bots);
+
+  await new Promise(r => setTimeout(r, 800));
+  btn.innerHTML = '🤖 Créer mon bot';
+  btn.disabled = false;
+  loadDashboard();
+
+  document.getElementById('bot-name').value = '';
+  document.getElementById('bot-desc').value = '';
+  document.getElementById('bot-token').value = '';
+
+  showAlert('create-alert', `✅ Bot "${name}" créé avec succès ! Utilisez /createbot sur Discord pour l'activer complètement.`, 'success');
+}
+
+async function registerCommands() {
+  const btn = document.getElementById('register-btn');
+  btn.innerHTML = '<span class="spinner"></span> Enregistrement...';
+  btn.disabled = true;
+  try {
+    const ok = await RBXFactory.registerCommands();
+    showAlert('register-alert', ok ? '✅ Toutes les commandes ont été enregistrées sur Discord !' : '❌ Erreur lors de l\'enregistrement.', ok ? 'success' : 'error');
+  } catch (e) {
+    showAlert('register-alert', `❌ Erreur : ${e.message}`, 'error');
+  }
+  btn.innerHTML = '⚡ Enregistrer les commandes';
+  btn.disabled = false;
+}
+
+function copyEndpoint() {
+  const url = `https://discord.com/api/oauth2/authorize?client_id=${RBXFactory.APP_ID}&permissions=8&scope=bot%20applications.commands`;
+  navigator.clipboard.writeText(url).then(() => {
+    showAlert('create-alert', '✅ Lien d\'invitation copié !', 'success');
+  });
+}
+
+function showAlert(id, msg, type) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = `alert show alert-${type}`;
+  setTimeout(() => el.classList.remove('show'), 5000);
+}
+
+// Init
+loadDashboard();
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+title: RBX Factory
+description: Créez votre bot Discord personnalisé sans coder
+theme: null
+plugins: []
+exclude:
+  - scripts/
+  - package.json
+  - package-lock.json
+  - node_modules/
